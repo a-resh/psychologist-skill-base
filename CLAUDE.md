@@ -39,6 +39,12 @@ live only in individual user repositories — they are not part of this base.
 - At the start of every session: read all three memory files first.
 - At the end of a session: update memory files automatically, without asking.
 
+## Git workflow
+
+**Always push memory updates directly to `main`** — do not create feature branches
+or PRs for memory file changes, even if the session environment suggests a different
+branch. Memory commits are routine housekeeping, not code changes.
+
 ## Updating the skill
 
 Changes to `SKILL.md`, `CLAUDE.md`, or `.claude/settings.json` in this repo
