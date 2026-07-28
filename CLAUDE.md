@@ -28,7 +28,8 @@ CLAUDE.md                                       # this file
 ```
 
 Memory files (`user-profile.md`, `session-log.md`, `techniques-knowledge-base.md`)
-live only in individual user repositories — they are not part of this base.
+and session debug logs (`memory/sessions/*.json`) live only in individual user
+repositories — they are not part of this base.
 
 ## How the skill works (read SKILL.md for the full spec)
 
