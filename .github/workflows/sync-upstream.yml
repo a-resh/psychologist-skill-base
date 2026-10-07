@@ -1,8 +1,9 @@
 name: sync-upstream
 
-# Pulls the shared files (CLAUDE.md, .claude/settings.json and the psychologist
-# skill) from the public base repository and opens or updates a PR on the
-# `sync-upstream` branch when they differ. Memory files are never touched.
+# Pulls the shared files (AGENTS.md, CLAUDE.md and .claude/) from the public base
+# repository and opens or updates a PR on the `sync-upstream` branch when they
+# differ. Memory files and .claude/settings.local.json are never touched, and files
+# that exist only in this repo (such as other skills) are left alone.
 # This workflow file itself is not synced: the Actions token cannot modify
 # workflows, so copy it by hand when it changes.
 
@@ -33,12 +34,14 @@ jobs:
         run: |
           base="$RUNNER_TEMP/base"
           git clone --depth 1 "https://github.com/$BASE_REPO" "$base"
+          # Never take memory or local settings from the base
+          rm -rf "$base/$SKILL_DIR/memory" "$base/.claude/settings.local.json"
+          cp "$base/AGENTS.md" "$base/CLAUDE.md" .
+          # The psychologist skill mirrors the base (except memory/);
+          # the rest of .claude/ only gets files added or updated
           mkdir -p "$SKILL_DIR"
-          cp "$base/CLAUDE.md" CLAUDE.md
-          cp "$base/.claude/settings.json" .claude/settings.json
-          # Replace everything in the skill folder except memory/
           find "$SKILL_DIR" -mindepth 1 -maxdepth 1 ! -name memory -exec rm -rf {} +
-          find "$base/$SKILL_DIR" -mindepth 1 -maxdepth 1 ! -name memory -exec cp -R {} "$SKILL_DIR/" \;
+          cp -R "$base/.claude/." .claude/
           echo "BASE_SHA=$(git -C "$base" rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
       - uses: peter-evans/create-pull-request@v8
@@ -46,12 +49,12 @@ jobs:
           branch: sync-upstream
           delete-branch: true
           add-paths: |
+            AGENTS.md
             CLAUDE.md
-            .claude/settings.json
-            .claude/skills/psychologist
+            .claude
           commit-message: Sync shared files from psychologist-skill-base@${{ env.BASE_SHA }}
           title: Sync from psychologist-skill-base
           body: |
-            Updates `CLAUDE.md`, `.claude/settings.json` and the psychologist skill
-            from ${{ env.BASE_REPO }}@${{ env.BASE_SHA }}.
+            Updates `AGENTS.md`, `CLAUDE.md` and `.claude/` from
+            ${{ env.BASE_REPO }}@${{ env.BASE_SHA }}.
             Memory files are not touched. Merge to apply the update.
