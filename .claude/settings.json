@@ -1,5 +1,8 @@
 {
   "model": "opus",
-  "effortLevel": "max",
-  "alwaysThinkingEnabled": true
+  "effortLevel": "xhigh",
+  "alwaysThinkingEnabled": true,
+  "env": {
+    "CLAUDE_CODE_EFFORT_LEVEL": "max"
+  }
 }
