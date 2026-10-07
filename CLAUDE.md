@@ -11,8 +11,8 @@ without waiting for the user to ask. This is the sole purpose of this repo.
 ## What this repository is
 
 This is the **base skill repository** for the CBT psychologist skill. It contains
-only the shared configuration — skill definition, Claude Code settings, and
-CLAUDE.md. It has no user memory files.
+only the shared configuration — skill definition, Claude Code settings, CLAUDE.md,
+and the `sync-upstream` workflow. It has no user memory files.
 
 User repositories fork/derive from this repo and add their own `memory/` files.
 When the skill definition or settings change here, user repos pull the update via
@@ -24,6 +24,7 @@ the `sync-upstream` GitHub Action (creates a PR automatically).
 .claude/settings.json                           # model, effort, thinking settings
 .claude/skills/psychologist/
   SKILL.md                                      # skill definition + operating instructions
+.github/workflows/sync-upstream.yml             # daily sync of shared files into user repos
 CLAUDE.md                                       # this file
 ```
 
@@ -48,7 +49,15 @@ branch. Memory commits are routine housekeeping, not code changes.
 
 ## Updating the skill
 
-Changes to `SKILL.md`, `CLAUDE.md`, or `.claude/settings.json` in this repo
-propagate to user repos via the daily GitHub Action (`sync-upstream`). The action
-opens a PR in each user repo — merge it to apply the update. Memory files are
-never touched by the sync.
+Changes to `SKILL.md` (or anything else in `.claude/skills/psychologist/` outside
+`memory/`), `CLAUDE.md`, or `.claude/settings.json` in this repo propagate to user
+repos via the `sync-upstream` GitHub Action (`.github/workflows/sync-upstream.yml`).
+It runs daily in each user repo (or on demand: Actions → sync-upstream → Run
+workflow) and opens or updates a PR from the `sync-upstream` branch — merge it to
+apply the update. Memory files are never touched by the sync. In this base repo
+the job is skipped.
+
+To set up a user repo: copy `.github/workflows/sync-upstream.yml` there and enable
+Settings → Actions → General → "Allow GitHub Actions to create and approve pull
+requests". The workflow file itself is not synced (the Actions token cannot modify
+workflows) — when it changes here, copy it into each user repo by hand.

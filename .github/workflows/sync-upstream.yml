@@ -1,0 +1,57 @@
+name: sync-upstream
+
+# Pulls the shared files (CLAUDE.md, .claude/settings.json and the psychologist
+# skill) from the public base repository and opens or updates a PR on the
+# `sync-upstream` branch when they differ. Memory files are never touched.
+# This workflow file itself is not synced: the Actions token cannot modify
+# workflows, so copy it by hand when it changes.
+
+on:
+  schedule:
+    - cron: '17 4 * * *' # daily, 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-upstream
+
+jobs:
+  sync:
+    # In the base repository this file is only a template for user repos.
+    if: github.repository != 'a-resh/psychologist-skill-base'
+    runs-on: ubuntu-latest
+    env:
+      BASE_REPO: a-resh/psychologist-skill-base
+      SKILL_DIR: .claude/skills/psychologist
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Copy shared files from the base repository
+        run: |
+          base="$RUNNER_TEMP/base"
+          git clone --depth 1 "https://github.com/$BASE_REPO" "$base"
+          mkdir -p "$SKILL_DIR"
+          cp "$base/CLAUDE.md" CLAUDE.md
+          cp "$base/.claude/settings.json" .claude/settings.json
+          # Replace everything in the skill folder except memory/
+          find "$SKILL_DIR" -mindepth 1 -maxdepth 1 ! -name memory -exec rm -rf {} +
+          find "$base/$SKILL_DIR" -mindepth 1 -maxdepth 1 ! -name memory -exec cp -R {} "$SKILL_DIR/" \;
+          echo "BASE_SHA=$(git -C "$base" rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          branch: sync-upstream
+          delete-branch: true
+          add-paths: |
+            CLAUDE.md
+            .claude/settings.json
+            .claude/skills/psychologist
+          commit-message: Sync shared files from psychologist-skill-base@${{ env.BASE_SHA }}
+          title: Sync from psychologist-skill-base
+          body: |
+            Updates `CLAUDE.md`, `.claude/settings.json` and the psychologist skill
+            from ${{ env.BASE_REPO }}@${{ env.BASE_SHA }}.
+            Memory files are not touched. Merge to apply the update.
