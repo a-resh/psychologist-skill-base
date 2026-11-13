@@ -17,9 +17,9 @@ skills should read `SKILL.md` and follow it directly.
 ## What this repository is
 
 This is the **base skill repository** for the CBT psychologist skill. It contains
-only the shared configuration — skill definition, Claude Code settings, AGENTS.md
-(and the CLAUDE.md that imports it), and the `sync-upstream` workflow. It has no
-user memory files.
+only the shared configuration — skill definition (with its `practices/` technique
+library), Claude Code settings, AGENTS.md (and the CLAUDE.md that imports it), and
+the `sync-upstream` workflow. It has no user memory files.
 
 User repositories fork/derive from this repo and add their own `memory/` files.
 When the skill definition or settings change here, user repos pull the update via
@@ -31,6 +31,7 @@ the `sync-upstream` GitHub Action (creates a PR automatically).
 .claude/settings.json                           # model, effort, thinking settings
 .claude/skills/psychologist/
   SKILL.md                                      # skill definition + operating instructions
+  practices/                                    # CBT technique library (shared, synced)
   memory/                                       # user repos only: profile, log, techniques, sessions/
 .github/workflows/sync-upstream.yml             # daily sync of shared files into user repos
 AGENTS.md                                       # this file — instructions for coding agents
@@ -47,6 +48,11 @@ repositories — they are not part of this base.
   replacement — explicit crisis/safety boundaries are in SKILL.md.
 - "Self-learning" is implemented through three `memory/` files in user repos, since
   the model itself is not trained.
+- Step-by-step technique scripts live in `practices/` (shared, synced with the
+  skill); SKILL.md maps situations to techniques. A user's
+  `memory/techniques-knowledge-base.md` holds only notes on how techniques worked
+  for that person — new techniques go into `practices/`, not into the memory
+  template, because existing user repos never receive template changes.
 - At the start of every session: read all three memory files first.
 - At the end of a session: update memory files automatically, without asking.
 
